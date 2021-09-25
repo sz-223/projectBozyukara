@@ -12,7 +12,7 @@
     "fastify-static": "^4.0.0",
     "handlebars": "^4.7.7",
     "point-of-view": "^4.14.0",
-    "discord.js": "^13.1.0",
+    "discord.js": "^11.6.4",
     "query-string": "^7.0.1"
   },
   "engines": {
