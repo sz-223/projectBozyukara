@@ -51,12 +51,12 @@ client.on('message', message =>{
  }
 });
 
-const mainChannelId = 863697257584656388;
+const mainChannelId = 863697257584656385;
 
 client.on('voiceStateUpdate', (oldGuildMember, newGuildMember) =>{
  if(oldGuildMember.voiceChannelID === undefined && newGuildMember.voiceChannelID !== undefined){
    if(client.channels.get(newGuildMember.voiceChannelID).members.size == 1){
-     if (newGuildMember.voiceChannelID == 725595164105768984) {
+     if (newGuildMember.voiceChannelID == 863697257584656391) {
        newGuildMember.voiceChannel.createInvite({"maxAge":"0"})
          .then(invite => sendMsg(
            mainChannelId, "<@" + newGuildMember.user.id +"> が通話を開始しました！\n" + invite.url
