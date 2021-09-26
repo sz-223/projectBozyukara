@@ -56,7 +56,7 @@ client.on('message', message =>{
 
 
 client.on('voiceStateUpdate', (oldGuildMember, newGuildMember) =>{
-  if(oldGuildMember.voiceChannelID === undefined && newGuildMember.voiceChannelID !== undefined){
+  //if(oldGuildMember.voiceChannelID === undefined && newGuildMember.voiceChannelID !== undefined){
    if(client.channels.get(newGuildMember.voiceChannelID).members.size == 1){
      if (newGuildMember.voiceChannelID == 863697257584656391) {
        newGuildMember.voiceChannel.createInvite({"maxAge":"0"})
@@ -65,7 +65,7 @@ client.on('voiceStateUpdate', (oldGuildMember, newGuildMember) =>{
          ));
      }
    }
- }
+ //}
 });
 
 if(process.env.DISCORD_BOT_TOKEN == undefined){
