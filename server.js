@@ -3,6 +3,8 @@ const querystring = require('querystring');
 const discord = require('discord.js');
 const client = new discord.Client();
 
+var mainChannelId = 863697257584656388;
+
 http.createServer(function(req, res){
  if (req.method == 'POST'){
    var data = "";
@@ -47,11 +49,11 @@ client.on('message', message =>{
  if (message.content.match(/にゃ～ん|にゃーん/)){
    let text = "にゃ～ん";
    sendMsg(message.channel.id, text);
+   mainChannelId = message.channel.id;
    return;
  }
 });
 
-const mainChannelId = 863697257584656385;
 
 client.on('voiceStateUpdate', (oldGuildMember, newGuildMember) =>{
  if(oldGuildMember.voiceChannelID === undefined && newGuildMember.voiceChannelID !== undefined){
