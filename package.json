@@ -16,7 +16,7 @@
     "query-string": "^7.0.1"
   },
   "engines": {
-    "node": "12.x"
+    "node": "16.x"
   },
   "repository": {
     "url": "https://glitch.com/edit/#!/frosted-dear-plant"
