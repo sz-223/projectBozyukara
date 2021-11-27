@@ -38,11 +38,11 @@ client.on('ready', () =>{
 });
 
 client.on('messageCreate', message =>{
-  let TextchannelID = client.channels.get(863697257584656389);
-  if(TextchannelID !== undefined)TextchannelID.send('メッセージ');
   if (message.author.bot){
     return;
   }
+  let TextchannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
+  if(TextchannelID !== undefined)TextchannelID.send('メッセージ');
   if(message.mentions.users.has(client.user)) {
     message.reply("呼びましたか？");
     return;
