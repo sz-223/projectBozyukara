@@ -7,19 +7,19 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "fastify": "^3.14.1",
-    "fastify-formbody": "^5.0.0",
-    "fastify-static": "^4.0.0",
+    "fastify": "^3.24.0",
+    "fastify-formbody": "^5.2.0",
+    "fastify-static": "^4.5.0",
     "handlebars": "^4.7.7",
-    "point-of-view": "^4.14.0",
-    "discord.js": "^11.6.4",
+    "point-of-view": "^4.15.3",
+    "discord.js": "^13.3.1",
     "query-string": "^7.0.1"
   },
   "engines": {
     "node": "12.x"
   },
   "repository": {
-    "url": "https://glitch.com/edit/#!/glitch-hello-node"
+    "url": "https://glitch.com/edit/#!/frosted-dear-plant"
   },
   "license": "MIT",
   "keywords": [
