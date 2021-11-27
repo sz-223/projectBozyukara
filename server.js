@@ -38,7 +38,7 @@ client.on('ready', () =>{
 });
 
 client.on('messageCreate', message =>{
-  let TextchannelID = client.channels.cache.get(863697257584656389);
+  let TextchannelID = client.channels.get(863697257584656389);
   if(TextchannelID !== undefined)TextchannelID.send('メッセージ');
   if (message.author.bot){
     return;
