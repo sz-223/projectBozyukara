@@ -55,7 +55,7 @@ client.on('messageCreate', message =>{
 
 client.on('voiceStateUpdate', (oldState, newState) =>{
   console.log("voiceState");
-  client.channels.cache.get(863697257584656388).send('メッセージ');
+  //client.channels.cache.get(863697257584656388).send('メッセージ');
 });
 
 if(!process.env.DISCORD_BOT_TOKEN){
