@@ -55,8 +55,8 @@ client.on('messageCreate', message =>{
 });
 
 client.on('voiceStateUpdate', (oldState, newState) =>{
-  const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
   if(newState.channelID !== oldState.channelID){
+    const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
     if(oldState.channelID == undefined){
       
     }else if(newState.channelID == undefined){
