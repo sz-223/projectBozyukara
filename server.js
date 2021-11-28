@@ -59,7 +59,7 @@ client.on('voiceStateUpdate', (oldState, newState) =>{
     const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
     if(oldState.channel === null){
       //console.log("voiceState");
-      notifChannelID.send(newState.member. +"が通話を開始しました！\n");
+      notifChannelID.send(newState.member.displayName + " が「" + newState.channel.name +"」に入室しました！\n");
     }else if(newState.channel === null){
       notifChannelID.send("<@" + newState.id +"> が通話を終了しました！\n");
     }
