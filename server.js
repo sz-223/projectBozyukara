@@ -4,6 +4,7 @@ const discord = require('discord.js');
 const { Client, Intents } = require('discord.js');
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES] });
+//const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
 
 http.createServer(function(req, res){
   if (req.method == 'POST'){
@@ -41,8 +42,8 @@ client.on('messageCreate', message =>{
   if (message.author.bot){
     return;
   }
-  let TextchannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
-  if(TextchannelID !== undefined)TextchannelID.send('メッセージ');
+  const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
+  if(notifChannelID !== undefined)notifChannelID.send('メッセージ');
   if(message.mentions.users.has(client.user)) {
     message.reply("呼びましたか？");
     return;
@@ -54,8 +55,12 @@ client.on('messageCreate', message =>{
 });
 
 client.on('voiceStateUpdate', (oldState, newState) =>{
+  const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
   if(newState.channelID !== oldState.channelID){
-    
+    if(oldState.channelID == undefined){
+      
+    }else if(newState.channelID == undefined){
+    }
   }
   console.log("voiceState");
   //client.channels.cache.get(863697257584656388).send('メッセージ');
