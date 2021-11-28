@@ -55,14 +55,15 @@ client.on('messageCreate', message =>{
 });
 
 client.on('voiceStateUpdate', (oldState, newState) =>{
-  if(newState.channelID !== oldState.channelID){
+  if(newState.channel !== oldState.channel){
     const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
-    if(oldState.channelID == undefined){
-      
-    }else if(newState.channelID == undefined){
+    if(oldState.channel === null){
+      //console.log("voiceState");
+      notifChannelID.send(newState.member. +"が通話を開始しました！\n");
+    }else if(newState.channel === null){
+      notifChannelID.send("<@" + newState.id +"> が通話を終了しました！\n");
     }
   }
-  console.log("voiceState");
   //client.channels.cache.get(863697257584656388).send('メッセージ');
 });
 
