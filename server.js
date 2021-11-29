@@ -60,7 +60,8 @@ client.on('voiceStateUpdate', (oldState, newState) =>{
     if(oldState.channel === null){
       //console.log("voiceState");
       notifChannelID.send(newState.member.displayName + " が「" + newState.channel.name +"」に入室しました！\n");
-      notifChannelID.send({content: newState.channel.members.size + "人\n", files: {["https://i.imgur.com/removed.png"]});
+      notifChannelID.send({content: newState.channel.members.size + "人\n", files: [newState.member.displayAvatarURL()]});
+      //const attachment = new discord.MessageAttachment('cbcfilter.png');
     }else if(newState.channel === null){
       notifChannelID.send("<@" + newState.id +"> が通話を終了しました！\n");
       notifChannelID.send(oldState.channel.members.size + "人\n");
