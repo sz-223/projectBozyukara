@@ -78,23 +78,21 @@ async function userIconsVoiceCh(voiceCh){
   const canvas = Canvas.createCanvas(29 * userSize - 5, 24);
   const ctx = canvas.getContext('2d');
   for(let i = 0; i < userSize; i++){
+    createRoundRectPath(ctx, 29 * i, 0, 24, 24, 2);
+  }
+  ctx.clip();
+  for(let i = 0; i < userSize; i++){
     const pfp = await Canvas.loadImage(
       voiceCh.members.at(i).displayAvatarURL({
         size:128, format: 'png',
       })
     )
-    drawAvatarHorizontal(ctx, pfp, i);
+    const posx = 29 * i;
+    ctx.drawImage(pfp, 0, 0, 128, 128, posx, 0, 24, 24);
   }
   //const attachment = new MessageAttachment(canvas.toBuffer());
   //console.log(attachment.height);
   return canvas.toBuffer();
-}
-
-function drawAvatarHorizontal(ctx, pfp, order){
-  const posx = 29 * order;
-  createRoundRectPath(ctx, posx, 0, 24, 24, 2);
-  ctx.clip();
-  ctx.drawImage(pfp, 0, 0, 128, 128, posx, 0, 24, 24);
 }
 
 function createRoundRectPath(ctx, x, y, w, h, r) {
