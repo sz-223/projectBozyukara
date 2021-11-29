@@ -61,9 +61,9 @@ client.on('voiceStateUpdate', (oldState, newState) =>{
     if(oldState.channel === null){
       //console.log("voiceState");
       notifChannelID.send(newState.member.displayName + " が「" + newState.channel.name +"」に入室しました！\n");
-      notifChannelID.send({contents: newState.channel.members.size + "人\n",files: [
-    { attachment: userIconsVoiceCh(newState.channel)}]});
-      notifChannelID.send(userIconsVoiceCh(newState.channel));
+      console.log(userIconsVoiceCh(newState.channel).length);
+      notifChannelID.send({contents: newState.channel.members.size + "人\n", files: [{attachment: userIconsVoiceCh(newState.channel).values}]});
+      //notifChannelID.send(userIconsVoiceCh(newState.channel));
     }else if(newState.channel === null){
       notifChannelID.send("<@" + newState.id +"> が通話を終了しました！\n");
       notifChannelID.send(oldState.channel.members.size + "人\n");
