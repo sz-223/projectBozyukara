@@ -77,7 +77,11 @@ function userIconsVoiceCh(voiceCh){
   const canvas = Canvas.createCanvas(29*userSize - 5, 24);
   const ctx = canvas.getContext('2d');
   for(let i = 0; i < userSize; i++){
-    
+    const pfp = Canvas.loadImage(
+      voiceCh.members.at(i).displayAvatarURL({
+        size:format: 'png',
+      })
+    )
   }
 }
 
