@@ -76,6 +76,9 @@ function userIconsVoiceCh(voiceCh){
   if(userSize === 0)return null;
   const canvas = Canvas.createCanvas(29*userSize - 5, 24);
   const ctx = canvas.getContext('2d');
+  for(let i = 0; i < userSize; i++){
+    
+  }
 }
 
 if(!process.env.DISCORD_BOT_TOKEN){
