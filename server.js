@@ -83,16 +83,32 @@ async function userIconsVoiceCh(voiceCh){
         size:128, format: 'png',
       })
     )
-    const posx = 29 * i;
-    ctx.drawImage(pfp, 0, 0, 128, 128, posx, 0, 24, 24);
+    drawAvatarHorizontal(ctx, pfp, i);
   }
   //const attachment = new MessageAttachment(canvas.toBuffer());
   //console.log(attachment.height);
   return canvas.toBuffer();
 }
 
-function drawAvatarHorizontal(ctx, order){
-  
+function drawAvatarHorizontal(ctx, pfp, order){
+  const posx = 29 * order;
+  createRoundRectPath(ctx, posx, 0, 24, 24, 2);
+  ctx.clip();
+  ctx.drawImage(pfp, 0, 0, 128, 128, posx, 0, 24, 24);
+}
+
+function createRoundRectPath(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.arc(x + w - r, y + r, r, Math.PI * (3/2), 0, false);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.arc(x + w - r, y + h - r, r, 0, Math.PI * (1/2), false);
+    ctx.lineTo(x + r, y + h);       
+    ctx.arc(x + r, y + h - r, r, Math.PI * (1/2), Math.PI, false);
+    ctx.lineTo(x, y + r);
+    ctx.arc(x + r, y + r, r, Math.PI, Math.PI * (3/2), false);
+    ctx.closePath();
 }
 
 if(!process.env.DISCORD_BOT_TOKEN){
