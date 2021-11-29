@@ -55,14 +55,14 @@ client.on('messageCreate', message =>{
   }
 });
 
-client.on('voiceStateUpdate', (oldState, newState) =>{
+client.on('voiceStateUpdate', async (oldState, newState) =>{
   if(newState.channel !== oldState.channel){
     const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
     if(oldState.channel === null){
       //console.log("voiceState");
       notifChannelID.send(newState.member.displayName + " が「" + newState.channel.name +"」に入室しました！\n");
       console.log(userIconsVoiceCh(newState.channel).length);
-      notifChannelID.send({contents: newState.channel.members.size + "人\n", files: [{attachment: userIconsVoiceCh(newState.channel)}]});
+      notifChannelID.send({contents: newState.channel.members.size + "人\n", files: [{attachment: await userIconsVoiceCh(newState.channel)}]});
       //notifChannelID.send(userIconsVoiceCh(newState.channel));
     }else if(newState.channel === null){
       notifChannelID.send("<@" + newState.id +"> が通話を終了しました！\n");
@@ -87,6 +87,7 @@ async function userIconsVoiceCh(voiceCh){
     ctx.drawImage(pfp, 0, 0, 32, 32, posx, 0, posx + 24, 24);
   }
   const attachment = new discord.MessageAttachment(canvas.toBuffer());
+  console.log(attachment.size());
   return attachment;
 }
 
