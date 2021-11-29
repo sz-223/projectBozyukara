@@ -61,8 +61,8 @@ client.on('voiceStateUpdate', (oldState, newState) =>{
     if(oldState.channel === null){
       //console.log("voiceState");
       notifChannelID.send(newState.member.displayName + " が「" + newState.channel.name +"」に入室しました！\n");
-      notifChannelID.send({content: newState.channel.members.size + "人\n", files: [newState.member.displayAvatarURL({size:16})]});
-      //const attachment = new discord.MessageAttachment('cbcfilter.png');
+      notifChannelID.send(newState.channel.members.size + "人\n");
+      notifChannelID.send(userIconsVoiceCh(newState.channel));
     }else if(newState.channel === null){
       notifChannelID.send("<@" + newState.id +"> が通話を終了しました！\n");
       notifChannelID.send(oldState.channel.members.size + "人\n");
@@ -74,15 +74,19 @@ client.on('voiceStateUpdate', (oldState, newState) =>{
 function userIconsVoiceCh(voiceCh){
   let userSize = voiceCh.members.size;
   if(userSize === 0)return null;
-  const canvas = Canvas.createCanvas(29*userSize - 5, 24);
+  const canvas = Canvas.createCanvas(29 * userSize - 5, 24);
   const ctx = canvas.getContext('2d');
   for(let i = 0; i < userSize; i++){
     const pfp = Canvas.loadImage(
       voiceCh.members.at(i).displayAvatarURL({
-        size:format: 'png',
+        size:32, format: 'png',
       })
     )
+    const posx = 29 * i + 24;
+    ctx.drawImage(pfp, 0, 0, 32, 32, posx, 0, posx + 24, 24);
   }
+  const attachment = new discord.MessageAttachment(canvas.toBuffer());
+  return attachment;
 }
 
 if(!process.env.DISCORD_BOT_TOKEN){
