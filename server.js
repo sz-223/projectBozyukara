@@ -80,11 +80,11 @@ async function userIconsVoiceCh(voiceCh){
   for(let i = 0; i < userSize; i++){
     const pfp = await Canvas.loadImage(
       voiceCh.members.at(i).displayAvatarURL({
-        size:32, format: 'png',
+        size:128, format: 'png',
       })
     )
     const posx = 29 * i;
-    ctx.drawImage(pfp, 0, 0, 32, 32, posx, 0, posx + 24, 24);
+    ctx.drawImage(pfp, 0, 0, 128, 128, posx, 0, posx + 24, 24);
   }
   //const attachment = new MessageAttachment(canvas.toBuffer());
   //console.log(attachment.height);
