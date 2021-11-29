@@ -61,7 +61,8 @@ client.on('voiceStateUpdate', (oldState, newState) =>{
     if(oldState.channel === null){
       //console.log("voiceState");
       notifChannelID.send(newState.member.displayName + " が「" + newState.channel.name +"」に入室しました！\n");
-      notifChannelID.send(newState.channel.members.size + "人\n");
+      notifChannelID.send({contents: newState.channel.members.size + "人\n",files: [
+    { attachment: userIconsVoiceCh(newState.channel)}]});
       notifChannelID.send(userIconsVoiceCh(newState.channel));
     }else if(newState.channel === null){
       notifChannelID.send("<@" + newState.id +"> が通話を終了しました！\n");
@@ -71,13 +72,13 @@ client.on('voiceStateUpdate', (oldState, newState) =>{
   //client.channels.cache.get(863697257584656388).send('メッセージ');
 });
 
-function userIconsVoiceCh(voiceCh){
+async function userIconsVoiceCh(voiceCh){
   let userSize = voiceCh.members.size;
   if(userSize === 0)return null;
   const canvas = Canvas.createCanvas(29 * userSize - 5, 24);
   const ctx = canvas.getContext('2d');
   for(let i = 0; i < userSize; i++){
-    const pfp = Canvas.loadImage(
+    const pfp = await Canvas.loadImage(
       voiceCh.members.at(i).displayAvatarURL({
         size:32, format: 'png',
       })
