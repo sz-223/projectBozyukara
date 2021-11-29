@@ -60,9 +60,10 @@ client.on('voiceStateUpdate', (oldState, newState) =>{
     if(oldState.channel === null){
       //console.log("voiceState");
       notifChannelID.send(newState.member.displayName + " が「" + newState.channel.name +"」に入室しました！\n");
-      
+      notifChannelID.send(newState.channel.members.size + "人\n");
     }else if(newState.channel === null){
       notifChannelID.send("<@" + newState.id +"> が通話を終了しました！\n");
+      notifChannelID.send(oldState.channel.members.size + "人\n");
     }
   }
   //client.channels.cache.get(863697257584656388).send('メッセージ');
