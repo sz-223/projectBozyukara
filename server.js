@@ -62,6 +62,7 @@ client.on('voiceStateUpdate', async (oldState, newState) =>{
       //console.log("voiceState");
       notifChannelID.send(newState.member.displayName + " が「" + newState.channel.name +"」に入室しました！\n");
       //console.log(userIconsVoiceCh(newState.channel).length);
+      const activeVoiceCh = 
       notifChannelID.send({content: "現在「" + newState.channel.name +"」"+  newState.channel.members.size + "人\n", files: [{attachment: await userIconsVoiceCh(newState.channel)}]});
       //notifChannelID.send(userIconsVoiceCh(newState.channel));
     }else if(newState.channel === null){
@@ -77,9 +78,11 @@ async function userIconsVoiceCh(voiceCh){
   if(userSize === 0)return null;
   const canvas = Canvas.createCanvas(29 * userSize - 5, 24);
   const ctx = canvas.getContext('2d');
+  ctx.beginPath();
   for(let i = 0; i < userSize; i++){
-    createRoundRectPath(ctx, 29 * i, 0, 24, 24, 2);
+    createRoundRectPath(ctx, 29 * i, 0, 24, 24, 3);
   }
+  ctx.closePath();
   ctx.clip();
   for(let i = 0; i < userSize; i++){
     const pfp = await Canvas.loadImage(
@@ -96,7 +99,7 @@ async function userIconsVoiceCh(voiceCh){
 }
 
 function createRoundRectPath(ctx, x, y, w, h, r) {
-    ctx.beginPath();
+    //ctx.beginPath();
     ctx.moveTo(x + r, y);
     ctx.lineTo(x + w - r, y);
     ctx.arc(x + w - r, y + r, r, Math.PI * (3/2), 0, false);
@@ -106,7 +109,7 @@ function createRoundRectPath(ctx, x, y, w, h, r) {
     ctx.arc(x + r, y + h - r, r, Math.PI * (1/2), Math.PI, false);
     ctx.lineTo(x, y + r);
     ctx.arc(x + r, y + r, r, Math.PI, Math.PI * (3/2), false);
-    ctx.closePath();
+    //ctx.closePath();
 }
 
 if(!process.env.DISCORD_BOT_TOKEN){
