@@ -2,7 +2,7 @@ const http = require('http');
 const querystring = require('querystring');
 const Canvas = require('canvas')
 const discord = require('discord.js');
-const { Client, Intents } = require('discord.js');
+const { Client, Intents, MessageAttachment } = require('discord.js');
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES] });
 //const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
@@ -86,7 +86,8 @@ async function userIconsVoiceCh(voiceCh){
     const posx = 29 * i;
     ctx.drawImage(pfp, 0, 0, 32, 32, posx, 0, posx + 24, 24);
   }
-  const attachment = new await discord.MessageAttachment(canvas.toBuffer());
+  const attachment = new MessageAttachment(canvas.toBuffer(), 'profile-image.png');
+  //const attachment = await new discord.MessageAttachment('https://www.planetware.com/wpimages/2020/02/france-in-pictures-beautiful-places-to-photograph-eiffel-tower.jpg');
   console.log(attachment.height);
   return attachment;
 }
