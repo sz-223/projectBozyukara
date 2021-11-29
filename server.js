@@ -60,6 +60,7 @@ client.on('voiceStateUpdate', (oldState, newState) =>{
     if(oldState.channel === null){
       //console.log("voiceState");
       notifChannelID.send(newState.member.displayName + " が「" + newState.channel.name +"」に入室しました！\n");
+      
     }else if(newState.channel === null){
       notifChannelID.send("<@" + newState.id +"> が通話を終了しました！\n");
     }
