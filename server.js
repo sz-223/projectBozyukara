@@ -1,5 +1,6 @@
 const http = require('http');
 const querystring = require('querystring');
+const Canvas = require('canvas')
 const discord = require('discord.js');
 const { Client, Intents } = require('discord.js');
 
@@ -69,6 +70,13 @@ client.on('voiceStateUpdate', (oldState, newState) =>{
   }
   //client.channels.cache.get(863697257584656388).send('メッセージ');
 });
+
+function userIconsVoiceCh(voiceCh){
+  let userSize = voiceCh.members.size;
+  if(userSize === 0)return null;
+  const canvas = Canvas.createCanvas(29*userSize - 5, 24);
+  const ctx = canvas.getContext('2d');
+}
 
 if(!process.env.DISCORD_BOT_TOKEN){
  console.log('DISCORD_BOT_TOKENが設定されていません。');
