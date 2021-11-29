@@ -62,7 +62,7 @@ client.on('voiceStateUpdate', async (oldState, newState) =>{
       //console.log("voiceState");
       notifChannelID.send(newState.member.displayName + " が「" + newState.channel.name +"」に入室しました！\n");
       //console.log(userIconsVoiceCh(newState.channel).length);
-      const activeVoiceCh = client.channels.fetch(none,false).filter(c => c.type === 'voice').size;
+      const activeVoiceCh = client.channels.filter(c => c.type === 'voice').size;
       console.log(activeVoiceCh);
       notifChannelID.send({content: "現在「" + newState.channel.name +"」"+  newState.channel.members.size + "人\n", files: [{attachment: await userIconsVoiceCh(newState.channel)}]});
       //notifChannelID.send(userIconsVoiceCh(newState.channel));
