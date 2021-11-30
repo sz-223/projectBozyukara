@@ -60,7 +60,9 @@ client.on('voiceStateUpdate', async (oldState, newState) =>{
     const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
     if(oldState.channel === null){
       //console.log("voiceState");
-      if()return;
+      //if(newState.channel === client.afkChannel)return;
+      console.log(newState.channel.id);
+      console.log(client.afkChannelId);
       notifChannelID.send(newState.member.displayName + " が「" + newState.channel.name +"」に入室しました！\n");
       //console.log(userIconsVoiceCh(newState.channel).length);
       const activeVoiceCh = client.channels.cache.filter(c => c.type === 'GUILD_VOICE' && c.members.size !== 0).size;
