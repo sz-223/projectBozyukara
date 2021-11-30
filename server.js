@@ -56,24 +56,25 @@ client.on('messageCreate', message =>{
 });
 
 client.on('voiceStateUpdate', async (oldState, newState) =>{
+  const gulid = newState.guild;
   if(newState.channel !== oldState.channel){
     const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
     if(oldState.channel === null){
       //console.log("voiceState");
-      //if(newState.channel === client.afkChannel)return;
+      if(newState.channel.id === gulid.afkChannelId)return;
       console.log(newState.channel.id);
-      console.log(client.afkChannelId);
+      console.log(gulid.afkChannelId);
       notifChannelID.send(newState.member.displayName + " が「" + newState.channel.name +"」に入室しました！\n");
       //console.log(userIconsVoiceCh(newState.channel).length);
-      const activeVoiceCh = client.channels.cache.filter(c => c.type === 'GUILD_VOICE' && c.members.size !== 0).size;
+      const activeVoiceCh = gulid.channels.cache.filter(c => c.type === 'GUILD_VOICE' && c.members.size !== 0).size;
       console.log(activeVoiceCh);
       for(let i = 0; i < activeVoiceCh; i++){
-        const currentChannel = client.channels.cache.filter(c => c.type === 'GUILD_VOICE' && c.members.size !== 0).at(i);
+        const currentChannel = gulid.channels.cache.filter(c => c.type === 'GUILD_VOICE' && c.members.size !== 0).at(i);
         notifChannelID.send({content: "現在「" + currentChannel.name +"」"+  currentChannel.members.size + "人\n", files: [{attachment: await userIconsVoiceCh(currentChannel)}]});
       }
       //notifChannelID.send(userIconsVoiceCh(newState.channel));
     }else if(newState.channel === null){
-      if(client.channels.cache.filter(c => c.type === 'GUILD_VOICE' && c.members.size !== 0).size === 0){
+      if(gulid.channels.cache.filter(c => c.type === 'GUILD_VOICE' && c.members.size !== 0).size === 0 && oldState.channel.id !== gulid.afkChannelId){
         notifChannelID.send("いまは誰も入室してないよー\n");
       }
       //notifChannelID.send("<@" + newState.id +"> が通話を終了しました！\n");
