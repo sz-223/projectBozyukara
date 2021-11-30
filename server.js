@@ -60,17 +60,22 @@ client.on('voiceStateUpdate', async (oldState, newState) =>{
     const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
     if(oldState.channel === null){
       //console.log("voiceState");
+      if()return;
       notifChannelID.send(newState.member.displayName + " が「" + newState.channel.name +"」に入室しました！\n");
       //console.log(userIconsVoiceCh(newState.channel).length);
       const activeVoiceCh = client.channels.cache.filter(c => c.type === 'GUILD_VOICE' && c.members.size !== 0).size;
       console.log(activeVoiceCh);
       for(let i = 0; i < activeVoiceCh; i++){
-        const currentChannel = client.channels.cache.filter(c => c.type === 'GUILD_VOICE' && c.members.size !== 0);
-        notifChannelID.send({content: "現在「" + newState.channel.name +"」"+  newState.channel.members.size + "人\n", files: [{attachment: await userIconsVoiceCh(newState.channel)}]});
-      }//notifChannelID.send(userIconsVoiceCh(newState.channel));
+        const currentChannel = client.channels.cache.filter(c => c.type === 'GUILD_VOICE' && c.members.size !== 0).at(i);
+        notifChannelID.send({content: "現在「" + currentChannel.name +"」"+  currentChannel.members.size + "人\n", files: [{attachment: await userIconsVoiceCh(currentChannel)}]});
+      }
+      //notifChannelID.send(userIconsVoiceCh(newState.channel));
     }else if(newState.channel === null){
-      notifChannelID.send("<@" + newState.id +"> が通話を終了しました！\n");
-      notifChannelID.send(oldState.channel.members.size + "人\n");
+      if(client.channels.cache.filter(c => c.type === 'GUILD_VOICE' && c.members.size !== 0).size === 0){
+        notifChannelID.send("いまは誰も入室してないよー\n");
+      }
+      //notifChannelID.send("<@" + newState.id +"> が通話を終了しました！\n");
+      //notifChannelID.send(oldState.channel.members.size + "人\n");
     }
   }
   //client.channels.cache.get(863697257584656388).send('メッセージ');
