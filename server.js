@@ -2,9 +2,11 @@ const http = require('http');
 const querystring = require('querystring');
 const Canvas = require('canvas')
 const discord = require('discord.js');
+const cmdProc = require('./cmdProc.js');
 const { Client, Intents, MessageAttachment } = require('discord.js');
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES] });
+//const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
 
 http.createServer(function(req, res){
   if (req.method == 'POST'){
@@ -42,8 +44,12 @@ client.on('messageCreate', message =>{
   if (message.author.bot){
     return;
   }
-  const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '915251860108083210').first();
-  if(notifChannelID !== undefined)notifChannelID.send('メッセージ');
+  if (message.content.startsWith('!')){
+    cmdProc.cmdProcedure(message);
+    return;
+  }
+  //const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
+  //if(notifChannelID !== undefined)notifChannelID.send('メッセージ');
   if(message.mentions.users.has(client.user)) {
     message.reply("呼びましたか？");
     return;
@@ -57,25 +63,31 @@ client.on('messageCreate', message =>{
 client.on('voiceStateUpdate', async (oldState, newState) =>{
   const gulid = newState.guild;
   if(newState.channel !== oldState.channel){
-    const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '915251860108083210').first();
+    const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
     if(oldState.channel === null){
+      //console.log("voiceState");
       if(newState.channel.id === gulid.afkChannelId)return;
       console.log(newState.channel.id);
       console.log(gulid.afkChannelId);
       notifChannelID.send(newState.member.displayName + " が「" + newState.channel.name +"」に入室しました！\n");
+      //console.log(userIconsVoiceCh(newState.channel).length);
       const activeVoiceCh = gulid.channels.cache.filter(c => c.type === 'GUILD_VOICE' && c.members.size !== 0).size;
       console.log(activeVoiceCh);
       for(let i = 0; i < activeVoiceCh; i++){
         const currentChannel = gulid.channels.cache.filter(c => c.type === 'GUILD_VOICE' && c.members.size !== 0).at(i);
         notifChannelID.send({content: "現在「" + currentChannel.name +"」"+  currentChannel.members.size + "人\n", files: [{attachment: await userIconsVoiceCh(currentChannel)}]});
       }
+      //notifChannelID.send(userIconsVoiceCh(newState.channel));
     }else if(newState.channel === null){
       if(gulid.channels.cache.filter(c => c.type === 'GUILD_VOICE' && c.members.size !== 0).size === 0 && oldState.channel.id !== gulid.afkChannelId){
         notifChannelID.send("いまは誰も入室してないよー\n");
       }
+      //notifChannelID.send("<@" + newState.id +"> が通話を終了しました！\n");
+      //notifChannelID.send(oldState.channel.members.size + "人\n");
     }
   }
-});  
+  //client.channels.cache.get(863697257584656388).send('メッセージ');
+});
 
 async function userIconsVoiceCh(voiceCh){
   let userSize = voiceCh.members.size;
@@ -97,10 +109,13 @@ async function userIconsVoiceCh(voiceCh){
     const posx = 29 * i;
     ctx.drawImage(pfp, 0, 0, 128, 128, posx, 0, 24, 24);
   }
+  //const attachment = new MessageAttachment(canvas.toBuffer());
+  //console.log(attachment.height);
   return canvas.toBuffer();
 }
 
 function createRoundRectPath(ctx, x, y, w, h, r) {
+    //ctx.beginPath();
     ctx.moveTo(x + r, y);
     ctx.lineTo(x + w - r, y);
     ctx.arc(x + w - r, y + r, r, Math.PI * (3/2), 0, false);
@@ -110,6 +125,7 @@ function createRoundRectPath(ctx, x, y, w, h, r) {
     ctx.arc(x + r, y + h - r, r, Math.PI * (1/2), Math.PI, false);
     ctx.lineTo(x, y + r);
     ctx.arc(x + r, y + r, r, Math.PI, Math.PI * (3/2), false);
+    //ctx.closePath();
 }
 
 if(!process.env.DISCORD_BOT_TOKEN){
