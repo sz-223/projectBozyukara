@@ -1,5 +1,7 @@
 const ytdl = require('ytdl-core');
-const { entersState, AudioPlayerStatus, createAudioPlayer, createAudioResource, joinVoiceChannel,  StreamType } = require('@discordjs/voice');
+const musicSubscription = require('./src/music/subscription.js');
+const musicTrack = require('./src/music/track.js');
+const { entersState, AudioPlayerStatus, VoiceConnectionStatus, createAudioPlayer, createAudioResource, joinVoiceChannel,  StreamType, NoSubscriberBehavior } = require('@discordjs/voice');
 
 async function cmdProcedure(message){
   switch(message.content.split(' ')[0]){
@@ -27,16 +29,17 @@ async function playMusicAnalyseURL(message){
     selfDeaf: true,
     selfMute: false,
   });
-  const player = createAudioPlayer();
-  connection.subscribe(player);
+  //const player = createAudioPlayer();
+  //connection.subscribe(player);
   const videoinfo = await ytdl.getInfo(ytdl.getURLVideoID(url));
   console.log("videoinfo.loudness");  
   console.log(videoinfo.player_response.playerConfig.audioConfig.loudnessDb);
   // 動画の音源を取得
-  const stream = ytdl(ytdl.getURLVideoID(url), {
-    filter: 'audioonly' && (format => format.audioCodec === 'opus' && format.container === 'webm'), //webm opus
-    quality: 'highestaudio',
-    highWaterMark: 32 * 1024 * 1024, // https://github.com/fent/node-ytdl-core/issues/902
+  const stream = await ytdl(ytdl.getURLVideoID(url), {
+    filter: format => format.audioCodec === 'opus' && format.container === 'webm', //webm opus
+    quality: 'highest',
+    liveBuffer: 20000,
+    highWaterMark: 4 * 1024 * 1024, // https://github.com/fent/node-ytdl-core/issues/902
   });
   const resource = createAudioResource(stream, {
     inputType: StreamType.WebmOpus,
@@ -46,12 +49,30 @@ async function playMusicAnalyseURL(message){
   console.log(volumeconfigdB);
   console.log(Math.pow(0.1, volumeconfigdB / 20));
   resource.volume.setVolume(Math.pow(0.1, volumeconfigdB / 20));
-  // 再生
+  
+  const player = createAudioPlayer({
+     behaviors: {
+       noSubscriber: NoSubscriberBehavior.Pause,
+     },
+   });
+   player.play(resource);
+   const promises = [];
+   const status = ["●Loading Sounds...", `●Connecting to ${channel.id}...`];
+   promises.push(entersState(player, AudioPlayerStatus.AutoPaused, 1000 * 10).then(() => status[0] += "Done!"));
+   promises.push(entersState(connection, VoiceConnectionStatus.Ready, 1000 * 10).then(() => status[1] += "Done!"));
+   await Promise.race(promises);
+   await Promise.all([...promises]);
+   connection.subscribe(player);
+   await entersState(player, AudioPlayerStatus.Playing, 100);
+ 
+   await entersState(player, AudioPlayerStatus.Idle, 2 ** 31 - 1);
+   connection.destroy();
+  /*// 再生
   player.play(resource);
   await entersState(player,AudioPlayerStatus.Playing, 10 * 1000);
   await entersState(player,AudioPlayerStatus.Idle, 24 * 60 * 60 * 1000);
   // 再生が終了したら抜ける
-  connection.destroy();
+  connection.destroy();*/
 }
   
 async function playMusic(){
