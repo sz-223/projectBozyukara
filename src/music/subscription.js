@@ -7,6 +7,7 @@ const {
 	VoiceConnection,
 	VoiceConnectionDisconnectReason,
 	VoiceConnectionStatus,
+  NoSubscriberBehavior,
 } = require('@discordjs/voice');
 const { Track } = require('./track');
 const { promisify } = require('node:util');
@@ -28,10 +29,16 @@ class MusicSubscription {
     this.queueLock = false;
 	  this.eadyLock = false;
 		this.voiceConnection = voiceConnection;
-		this.audioPlayer = createAudioPlayer();
+		this.audioPlayer = createAudioPlayer({
+     behaviors: {
+       noSubscriber: NoSubscriberBehavior.Pause,
+     },
+   });
 		this.queue = [];
 
 		this.voiceConnection.on('stateChange', async (_/*: any*/, newState/*: { status: any; reason: any; closeCode: number; }*/) => {
+      console.log("check1");
+      console.log(newState.status);
 			if (newState.status === VoiceConnectionStatus.Disconnected) {
 				if (newState.reason === VoiceConnectionDisconnectReason.WebSocketClose && newState.closeCode === 4014) {
 					/**
@@ -78,6 +85,7 @@ class MusicSubscription {
 				try {
 					await entersState(this.voiceConnection, VoiceConnectionStatus.Ready, 20 * 1000);
 				} catch {
+          console.log("check2");
 					if (this.voiceConnection.state.status !== VoiceConnectionStatus.Destroyed) this.voiceConnection.destroy();
 				} finally {
 					this.readyLock = false;
@@ -109,6 +117,7 @@ class MusicSubscription {
 	 * @param track The track to add to the queue
 	 */
 	enqueue(track) {
+    console.log(track);
 		this.queue.push(track);
 		void this.processQueue();
 	}
@@ -138,6 +147,7 @@ class MusicSubscription {
 		try {
 			// Attempt to convert the Track into an AudioResource (i.e. start streaming the video)
 			const resource = await nextTrack.createAudioResource();
+      console.log(resource);
 			this.audioPlayer.play(resource);
 			this.queueLock = false;
 		} catch (error) {
@@ -147,4 +157,8 @@ class MusicSubscription {
 			return this.processQueue();
 		}
 	}
+}
+
+module.exports = {
+  MusicSubscription: MusicSubscription
 }

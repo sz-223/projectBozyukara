@@ -1,6 +1,6 @@
 const { getInfo } = require('ytdl-core');
 const { AudioResource, createAudioResource, demuxProbe } = require('@discordjs/voice');
-const { raw } = require('youtube-dl-exec');
+const { exec } = require('youtube-dl-exec');
 
 /**
  * This is the data required to create a Track object.
@@ -32,7 +32,7 @@ class Track {// implements TrackData {
 	public readonly onFinish;//: () => void;
 	public readonly onError;//: (error: Error) => void;*/
 
-	constructor(url, title, onStart, onFinish, onError) {
+	constructor(url, title, {onStart, onFinish, onError}) {
 		this.url = url;
 		this.title = title;
 		this.onStart = onStart;
@@ -44,8 +44,10 @@ class Track {// implements TrackData {
 	 * Creates an AudioResource from this Track.
 	 */
 	createAudioResource(){//: Promise<AudioResource<Track>> {
+    console.log('check4');
 		return new Promise((resolve, reject) => {
-			const process = raw(
+      console.log('check5');
+			const process = exec(
 				this.url,
 				{
 					o: '-',
@@ -55,9 +57,10 @@ class Track {// implements TrackData {
 				},
 				{ stdio: ['ignore', 'pipe', 'ignore'] },
 			);
+      //console.log(process);
 			if (!process.stdout) {
 				reject(new Error('No stdout'));
-				return;
+				//return;
 			}
 			const stream = process.stdout;
 			const onError = (error) => {
@@ -67,14 +70,49 @@ class Track {// implements TrackData {
 			};
 			process
 				.once('spawn', () => {
+        console.log("check 7");
 					demuxProbe(stream)
-						.then((probe/*: { stream: any; type: any; }*/) => Promise.resolve(createAudioResource(probe.stream, { metadata: this, inputType: probe.type })))
+						.then((probe/*: { stream: any; type: any; }*/) => resolve(createAudioResource(probe.stream, { metadata: this, inputType: probe.type })))
 						.catch(onError);
+          //demuxProbe(stream).then(probe => Promise.resolve(createAudioResource(probe.stream, { /*metadata: this,*/ inputType: probe.type })))
+          //.then(console.log(resource))
+          //Promise.resolve(createAudioResource(probe.stream, { /*metadata: this,*/ inputType: probe.type }));
 				})
 				.catch(onError);
 		});
 	}
-
+  /*createAudioResource(){//: Promise<AudioResource<Track>> {
+			const process = exec(
+				this.url,
+				{
+					o: '-',
+					q: '',
+					f: 'bestaudio[ext=webm+acodec=opus+asr=48000]/bestaudio',
+					r: '100K',
+				},
+				{ stdio: ['ignore', 'pipe', 'ignore'] },
+			);
+      //console.log(process);
+			if (!process.stdout) {
+				console.warn('No stdout');
+				return;
+			}
+			const stream = process.stdout;
+			const onError = (error) => {
+				if (!process.killed) process.kill();
+				stream.resume();
+				console.warn(error);
+        return;
+			};
+			process
+				.once('spawn', async () => {
+					let resource;
+          demuxProbe(stream).then(probe => resource = (createAudioResource(probe.stream, { /*metadata: this, inputType: probe.type })))
+          .then(console.log(resource))
+				})
+				.catch(onError);
+	}*/
+}
 	/**
 	 * Creates a Track from a video URL and lifecycle callback methods.
 	 *
@@ -83,7 +121,7 @@ class Track {// implements TrackData {
 	 *
 	 * @returns The created Track
 	 */
-	async from(url/*: string*/, methods/*: Pick<Track, 'onStart' | 'onFinish' | 'onError'>*/){//: Promise<Track> {
+	async function TrackFrom(url/*: string*/, methods/*: Pick<Track, 'onStart' | 'onFinish' | 'onError'>*/){//: Promise<Track> {
 		const info = await getInfo(url);
 
 		// The methods are wrapped so that we can ensure that they are only called once.
@@ -102,10 +140,15 @@ class Track {// implements TrackData {
 			},
 		};
 
-		return new Track({
-			title: info.videoDetails.title,
-			url,
-			...wrappedMethods,
-		});
+		return new Track(
+      url,
+			info.videoDetails.title,
+		  wrappedMethods,
+		);
 	}
+
+
+module.exports = {
+  Track: Track,
+  TrackFrom: TrackFrom,
 }
