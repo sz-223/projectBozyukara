@@ -47,7 +47,8 @@ async function musicPlay(message){
 		}
 
 		try {
-			// Attempt to create a Track from the user's video URL
+			/*
+      // Attempt to create a Track from the user's video URL
 			const track = await TrackFrom(url, {
 				onStart() {
 					console.log('Now playing!');//.catch(console.warn);
@@ -62,7 +63,23 @@ async function musicPlay(message){
 			});
 			// Enqueue the track and reply a success message to the user
 			subscription.enqueue(track);
-			await console.log(`Enqueued **${track.title}**`);
+      */
+      // Attempt to create a Track from the user's video URL
+			TrackFrom(url, {
+				onStart() {
+					console.log('Now playing!');//.catch(console.warn);
+				},
+				onFinish() {
+					console.log('Now finished!');//.catch(console.warn);
+				},
+				onError(error) {
+					console.warn(error);
+					console.log(`Error: ${error.message}`);//.catch(console.warn);
+				},
+			})
+			// Enqueue the track and reply a success message to the user
+			.then(track => subscription.enqueue(track) && console.log(`Enqueued **${track.title}**`))
+			//.then(track => console.log(`Enqueued **${track.title}**`));
 		} catch (error) {
 			console.warn(error);
 			await chatChannel.send('Failed to play track, please try again later!');

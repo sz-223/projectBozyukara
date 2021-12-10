@@ -1,6 +1,9 @@
 const { getInfo } = require('ytdl-core');
-const { AudioResource, createAudioResource, demuxProbe } = require('@discordjs/voice');
+const { AudioResource, createAudioResource, demuxProbe, StreamType } = require('@discordjs/voice');
 const { exec } = require('youtube-dl-exec');
+var ffmpeg = require('fluent-ffmpeg');
+const { Converter } = require('ffmpeg-stream');
+//const ytdl = require("discord-ytdl-core");
 
 /**
  * This is the data required to create a Track object.
@@ -32,9 +35,10 @@ class Track {// implements TrackData {
 	public readonly onFinish;//: () => void;
 	public readonly onError;//: (error: Error) => void;*/
 
-	constructor(url, title, {onStart, onFinish, onError}) {
+	constructor(url, title, loudnessDB, {onStart, onFinish, onError}) {
 		this.url = url;
 		this.title = title;
+    this.diffdB = - 30 - loudnessDB;
 		this.onStart = onStart;
 		this.onFinish = onFinish;
 		this.onError = onError;
@@ -43,7 +47,7 @@ class Track {// implements TrackData {
 	/**
 	 * Creates an AudioResource from this Track.
 	 */
-	createAudioResource(){//: Promise<AudioResource<Track>> {
+  createAudioResource(){//: Promise<AudioResource<Track>> {
     console.log('check4');
 		return new Promise((resolve, reject) => {
       console.log('check5');
@@ -62,25 +66,76 @@ class Track {// implements TrackData {
 				reject(new Error('No stdout'));
 				//return;
 			}
-			const stream = process.stdout;
+			//const stream = process.stdout;
+      const stream = process.stdout;
 			const onError = (error) => {
 				if (!process.killed) process.kill();
-				stream.resume();
+				//stream.resume();
 				reject(error);
 			};
 			process
 				.once('spawn', () => {
-        console.log("check 7");
+        console.log("check 7");        
+        console.log(stream);
+            /*ffmpeg(stream)
+                  //.audioCodec('libopus')
+                  .audioFilters('volume=0.5')
+                  //.format('webm')
+                  .on('error', (err) => console.error(err))
+                  .on('end', () => console.log('Finished!'))
+                  .pipe(streamOut => console.log(streamOut)//demuxProbe(streamOut).then(probe => resolve(createAudioResource(probe.stream, { metadata: this, inputType: probe.type }))).catch(onError)
+                        , {
+                    end: true
+                });*/
 					demuxProbe(stream)
-						.then((probe/*: { stream: any; type: any; }*/) => resolve(createAudioResource(probe.stream, { metadata: this, inputType: probe.type })))
+						.then((probe) => {return new Promise((resolve2, reject2) => {
+                //let streamOut;
+                console.log("check 9");
+                //console.log(probe.stream);
+                const converter = new Converter();
+                const input = converter.createInputStream({
+                  f: "webm",
+                  acodec: "opus",
+                });
+                probe.stream.pipe(input);
+            console.log(`volume=-${this.diffdB}dB`);
+            const streamOut = 
+                converter
+                  .createOutputStream({
+                    f: "webm",
+                    acodec: "opus",
+                    af: `volume=${this.diffdB}dB`,
+                  })
+                ;
+            converter.run().then(
+                  resolve2(resolve(createAudioResource(streamOut, { metadata: this, inputType: probe.type })))
+                  );
+            /*probe.stream.on('data', () =>
+                resolve2(ffmpeg()
+                  .input(probe.stream)
+                  .inputFormat('webm')
+                  .withAudioCodec('libopus')
+                  .addOption('-af "volume=0.5"')
+                  //.audioFilters('volume=0.5')
+                  .toFormat('webm')
+                  //.format('webm')
+                  .on('error', (err) => console.error(err))
+                  .on('end', () => console.log('Finished!'))
+                  .pipe(streamOut => resolve(createAudioResource(streamOut, { metadata: this, inputType: probe.type })), {
+                    end: true
+                })));*/
+                //console.log(streamOut);
+                //resolve2(resolve(createAudioResource(streamOut, { metadata: this, inputType: probe.type })));
+            });})
 						.catch(onError);
-          //demuxProbe(stream).then(probe => Promise.resolve(createAudioResource(probe.stream, { /*metadata: this,*/ inputType: probe.type })))
+          //demuxProbe(stream).then(probe => Promise.resolve(createAudioResource(probe.stream, { /*metadata: this, inputType: probe.type })))
           //.then(console.log(resource))
-          //Promise.resolve(createAudioResource(probe.stream, { /*metadata: this,*/ inputType: probe.type }));
+          //Promise.resolve(createAudioResource(probe.stream, { /*metadata: this, inputType: probe.type }));
 				})
 				.catch(onError);
 		});
-	}
+  }
+}
   /*createAudioResource(){//: Promise<AudioResource<Track>> {
 			const process = exec(
 				this.url,
@@ -112,7 +167,7 @@ class Track {// implements TrackData {
 				})
 				.catch(onError);
 	}*/
-}
+
 	/**
 	 * Creates a Track from a video URL and lifecycle callback methods.
 	 *
@@ -143,6 +198,7 @@ class Track {// implements TrackData {
 		return new Track(
       url,
 			info.videoDetails.title,
+      info.player_response.playerConfig.audioConfig.loudnessDb,
 		  wrappedMethods,
 		);
 	}

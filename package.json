@@ -20,7 +20,9 @@
     "tweetnacl": "^1.0.3",
     "@discordjs/voice": "^0.7.5",
     "simple-youtube-api": "^5.2.1",
-    "youtube-dl-exec": "^2.0.0"
+    "youtube-dl-exec": "^2.0.0",
+    "ffmpeg-stream": "^0.7.0",
+    "fluent-ffmpeg": "^2.1.2"
   },
   "engines": {
     "node": "16.x"

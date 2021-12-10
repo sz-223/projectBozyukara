@@ -1,4 +1,5 @@
 const ytdl = require('ytdl-core');
+//const discord_ytdl = require('discord-ytdl-core');
 const musicSubscription = require('./src/music/subscription.js');
 const musicTrack = require('./src/music/track.js');
 const { entersState, AudioPlayerStatus, VoiceConnectionStatus, createAudioPlayer, createAudioResource, joinVoiceChannel,  StreamType, NoSubscriberBehavior } = require('@discordjs/voice');

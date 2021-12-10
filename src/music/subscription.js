@@ -147,8 +147,11 @@ class MusicSubscription {
 		try {
 			// Attempt to convert the Track into an AudioResource (i.e. start streaming the video)
 			const resource = await nextTrack.createAudioResource();
+      console.log("check 8");
+      //resource.volume.setVolume(nextTrack.volume);
       console.log(resource);
 			this.audioPlayer.play(resource);
+      console.log("check 8");
 			this.queueLock = false;
 		} catch (error) {
 			// If an error occurred, try the next item of the queue instead
