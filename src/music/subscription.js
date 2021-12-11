@@ -13,18 +13,14 @@ const { Track } = require('./track');
 const { promisify } = require('node:util');
 
 const wait = promisify(setTimeout);
+const musicChannelid = process.env.MUSIC_TEXTCHANNEL_ID;
 
 /**
  * A MusicSubscription exists for each active VoiceConnection. Each subscription has its own audio player and queue,
  * and it also attaches logic to the audio player and voice connection for error handling and reconnection logic.
  */
 class MusicSubscription {
-	/*public readonly voiceConnection: VoiceConnection;
-	public readonly audioPlayer: AudioPlayer;
-	public queue: Track[];
-	public queueLock = false;
-	public readyLock = false;*/
-
+  
 	constructor(voiceConnection) {
     this.queueLock = false;
 	  this.eadyLock = false;
@@ -36,7 +32,7 @@ class MusicSubscription {
    });
 		this.queue = [];
 
-		this.voiceConnection.on('stateChange', async (_/*: any*/, newState/*: { status: any; reason: any; closeCode: number; }*/) => {
+		this.voiceConnection.on('stateChange', async (_, newState) => {
       console.log("check1");
       console.log(newState.status);
 			if (newState.status === VoiceConnectionStatus.Disconnected) {
@@ -85,7 +81,6 @@ class MusicSubscription {
 				try {
 					await entersState(this.voiceConnection, VoiceConnectionStatus.Ready, 20 * 1000);
 				} catch {
-          console.log("check2");
 					if (this.voiceConnection.state.status !== VoiceConnectionStatus.Destroyed) this.voiceConnection.destroy();
 				} finally {
 					this.readyLock = false;
@@ -94,19 +89,22 @@ class MusicSubscription {
 		});
 
 		// Configure audio player
-		this.audioPlayer.on('stateChange', (oldState/*: { status: any; resource: any; }*/, newState/*: { status: any; resource: any; }*/) => {
+		this.audioPlayer.on('stateChange', (oldState, newState) => {
 			if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
 				// If the Idle state is entered from a non-Idle state, it means that an audio resource has finished playing.
 				// The queue is then processed to start playing the next track, if one is available.
-				(oldState.resource/* as AudioResource<Track>*/).metadata.onFinish();
+				(oldState.resource).metadata.onFinish();
+        if(this.queue.length === 0){
+          this.message.channel.send("The queue is empty.");
+        }
 				void this.processQueue();
 			} else if (newState.status === AudioPlayerStatus.Playing) {
 				// If the Playing state has been entered, then a new track has started playback.
-				(newState.resource/* as AudioResource<Track>*/).metadata.onStart();
+				(newState.resource).metadata.onStart();
 			}
 		});
 
-		this.audioPlayer.on('error', (error) => (error.resource/* as AudioResource<Track>*/).metadata.onError(error));
+		this.audioPlayer.on('error', (error) => (error.resource).metadata.onError(error));
 
 		voiceConnection.subscribe(this.audioPlayer);
 	}
@@ -134,7 +132,7 @@ class MusicSubscription {
 	/**
 	 * Attempts to play a Track from the queue.
 	 */
-	async processQueue()/*: Promise<void> */{
+	async processQueue(){
 		// If the queue is locked (already being processed), is empty, or the audio player is already playing something, return
 		if (this.queueLock || this.audioPlayer.state.status !== AudioPlayerStatus.Idle || this.queue.length === 0) {
 			return;
@@ -146,12 +144,9 @@ class MusicSubscription {
 		const nextTrack = this.queue.shift();
 		try {
 			// Attempt to convert the Track into an AudioResource (i.e. start streaming the video)
+      this.message.channel.send(`Next ⏩ **${nextTrack.title}**`);
 			const resource = await nextTrack.createAudioResource();
-      console.log("check 8");
-      //resource.volume.setVolume(nextTrack.volume);
-      console.log(resource);
 			this.audioPlayer.play(resource);
-      console.log("check 8");
 			this.queueLock = false;
 		} catch (error) {
 			// If an error occurred, try the next item of the queue instead
@@ -160,6 +155,10 @@ class MusicSubscription {
 			return this.processQueue();
 		}
 	}
+  
+  async registerMessage(message){
+    this.message = message;
+  }
 }
 
 module.exports = {

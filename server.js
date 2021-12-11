@@ -63,10 +63,11 @@ client.on('messageCreate', message =>{
 client.on('voiceStateUpdate', async (oldState, newState) =>{
   const gulid = newState.guild;
   if(newState.channel !== oldState.channel){
-    const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
+    const notifChannelID = client.channels.cache.filter((channel)=> channel.id === process.env.NOTIF_TEXTCHANNEL_ID).first();
     if(oldState.channel === null){
       //console.log("voiceState");
       if(newState.channel.id === gulid.afkChannelId)return;
+      if(newState.member.user.bot === true)return;
       console.log(newState.channel.id);
       console.log(gulid.afkChannelId);
       notifChannelID.send(newState.member.displayName + " が「" + newState.channel.name +"」に入室しました！\n");
@@ -79,8 +80,9 @@ client.on('voiceStateUpdate', async (oldState, newState) =>{
       }
       //notifChannelID.send(userIconsVoiceCh(newState.channel));
     }else if(newState.channel === null){
-      if(gulid.channels.cache.filter(c => c.type === 'GUILD_VOICE' && c.members.size !== 0).size === 0 && oldState.channel.id !== gulid.afkChannelId){
-        notifChannelID.send("いまは誰も入室してないよー\n");
+      if(gulid.channels.cache.filter(c => c.type === 'GUILD_VOICE' && memberSizeExceptBot(c) === true).size === 0 && oldState.channel.id !== gulid.afkChannelId){
+        if(gulid.channels.cache.filter(c => c.type === 'GUILD_VOICE' && c.members.size !== 0).size === 0)notifChannelID.send("いまは誰も入室してないよー\n");
+        cmdProc.DestroyMusicBotConnection();
       }
       //notifChannelID.send("<@" + newState.id +"> が通話を終了しました！\n");
       //notifChannelID.send(oldState.channel.members.size + "人\n");
@@ -88,6 +90,18 @@ client.on('voiceStateUpdate', async (oldState, newState) =>{
   }
   //client.channels.cache.get(863697257584656388).send('メッセージ');
 });
+
+function memberSizeExceptBot(channel){
+  const memsize = channel.members.size;
+  if(memsize === 0)return false;
+  else if(memsize <= process.env.MusicBot_num){
+    for (let i = 0; i < memsize; i++){
+      if(channel.members.at(i).user.bot === false)return true;
+    }
+    return false;
+  }
+  else return true;
+}
 
 async function userIconsVoiceCh(voiceCh){
   let userSize = voiceCh.members.size;

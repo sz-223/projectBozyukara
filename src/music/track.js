@@ -1,20 +1,7 @@
 const { getInfo } = require('ytdl-core');
 const { AudioResource, createAudioResource, demuxProbe, StreamType } = require('@discordjs/voice');
 const { exec } = require('youtube-dl-exec');
-var ffmpeg = require('fluent-ffmpeg');
 const { Converter } = require('ffmpeg-stream');
-//const ytdl = require("discord-ytdl-core");
-
-/**
- * This is the data required to create a Track object.
- */
-/*export class TrackData {
-	url: string;
-	title: string;
-	onStart: () => void;
-	onFinish: () => void;
-	onError: (error: Error) => void;
-}*/
 
 //// eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {};
@@ -28,30 +15,24 @@ const noop = () => {};
  * we use tracks as they don't pre-emptively load the videos. Instead, once a Track is taken from the
  * queue, it is converted into an AudioResource just in time for playback.
  */
-class Track {// implements TrackData {
-	/*public readonly url;//: string;
-	public readonly title;//: string;
-	public readonly onStart;//: () => void;
-	public readonly onFinish;//: () => void;
-	public readonly onError;//: (error: Error) => void;*/
-
-	constructor(url, title, loudnessDB, {onStart, onFinish, onError}) {
+class Track {
+  
+	constructor(url, title, duration, loudnessDB, {onStart, onFinish, onError}) {
 		this.url = url;
 		this.title = title;
+    this.duration = TimeConverter(duration);
     this.diffdB = - 30 - loudnessDB;
 		this.onStart = onStart;
 		this.onFinish = onFinish;
 		this.onError = onError;
 	}
-
+  
 	/**
 	 * Creates an AudioResource from this Track.
 	 */
-  createAudioResource(){//: Promise<AudioResource<Track>> {
-    console.log('check4');
+  createAudioResource(){
 		return new Promise((resolve, reject) => {
-      console.log('check5');
-			const process = exec(
+			const process_ = exec(
 				this.url,
 				{
 					o: '-',
@@ -61,112 +42,49 @@ class Track {// implements TrackData {
 				},
 				{ stdio: ['ignore', 'pipe', 'ignore'] },
 			);
-      //console.log(process);
-			if (!process.stdout) {
+			if (!process_.stdout) {
 				reject(new Error('No stdout'));
-				//return;
+				return;
 			}
-			//const stream = process.stdout;
-      const stream = process.stdout;
+      const stream = process_.stdout;
 			const onError = (error) => {
-				if (!process.killed) process.kill();
-				//stream.resume();
+				if (!process_.killed) process_.kill();
+				stream.resume();
 				reject(error);
 			};
-			process
+      
+      const converter = new Converter();
+      const input = converter.createInputStream({
+        nostdin: true,
+        f: "webm",
+        acodec: "opus",
+      });
+			process_
 				.once('spawn', () => {
-        console.log("check 7");        
-        console.log(stream);
-            /*ffmpeg(stream)
-                  //.audioCodec('libopus')
-                  .audioFilters('volume=0.5')
-                  //.format('webm')
-                  .on('error', (err) => console.error(err))
-                  .on('end', () => console.log('Finished!'))
-                  .pipe(streamOut => console.log(streamOut)//demuxProbe(streamOut).then(probe => resolve(createAudioResource(probe.stream, { metadata: this, inputType: probe.type }))).catch(onError)
-                        , {
-                    end: true
-                });*/
 					demuxProbe(stream)
 						.then((probe) => {return new Promise((resolve2, reject2) => {
-                //let streamOut;
-                console.log("check 9");
-                //console.log(probe.stream);
-                const converter = new Converter();
-                const input = converter.createInputStream({
-                  f: "webm",
-                  acodec: "opus",
-                });
                 probe.stream.pipe(input);
-            console.log(`volume=-${this.diffdB}dB`);
-            const streamOut = 
+              console.log(`volume=-${this.diffdB}dB`);
+              const streamOut = 
                 converter
                   .createOutputStream({
                     f: "webm",
+                    timelimit: "20",
                     acodec: "opus",
                     af: `volume=${this.diffdB}dB`,
+                    //ab: "48K",
                   })
                 ;
-            converter.run().then(
+              converter.run().then(
                   resolve2(resolve(createAudioResource(streamOut, { metadata: this, inputType: probe.type })))
-                  );
-            /*probe.stream.on('data', () =>
-                resolve2(ffmpeg()
-                  .input(probe.stream)
-                  .inputFormat('webm')
-                  .withAudioCodec('libopus')
-                  .addOption('-af "volume=0.5"')
-                  //.audioFilters('volume=0.5')
-                  .toFormat('webm')
-                  //.format('webm')
-                  .on('error', (err) => console.error(err))
-                  .on('end', () => console.log('Finished!'))
-                  .pipe(streamOut => resolve(createAudioResource(streamOut, { metadata: this, inputType: probe.type })), {
-                    end: true
-                })));*/
-                //console.log(streamOut);
-                //resolve2(resolve(createAudioResource(streamOut, { metadata: this, inputType: probe.type })));
+                  ).catch(onError);
             });})
 						.catch(onError);
-          //demuxProbe(stream).then(probe => Promise.resolve(createAudioResource(probe.stream, { /*metadata: this, inputType: probe.type })))
-          //.then(console.log(resource))
-          //Promise.resolve(createAudioResource(probe.stream, { /*metadata: this, inputType: probe.type }));
 				})
 				.catch(onError);
 		});
   }
 }
-  /*createAudioResource(){//: Promise<AudioResource<Track>> {
-			const process = exec(
-				this.url,
-				{
-					o: '-',
-					q: '',
-					f: 'bestaudio[ext=webm+acodec=opus+asr=48000]/bestaudio',
-					r: '100K',
-				},
-				{ stdio: ['ignore', 'pipe', 'ignore'] },
-			);
-      //console.log(process);
-			if (!process.stdout) {
-				console.warn('No stdout');
-				return;
-			}
-			const stream = process.stdout;
-			const onError = (error) => {
-				if (!process.killed) process.kill();
-				stream.resume();
-				console.warn(error);
-        return;
-			};
-			process
-				.once('spawn', async () => {
-					let resource;
-          demuxProbe(stream).then(probe => resource = (createAudioResource(probe.stream, { /*metadata: this, inputType: probe.type })))
-          .then(console.log(resource))
-				})
-				.catch(onError);
-	}*/
 
 	/**
 	 * Creates a Track from a video URL and lifecycle callback methods.
@@ -176,7 +94,7 @@ class Track {// implements TrackData {
 	 *
 	 * @returns The created Track
 	 */
-	async function TrackFrom(url/*: string*/, methods/*: Pick<Track, 'onStart' | 'onFinish' | 'onError'>*/){//: Promise<Track> {
+	async function TrackFrom(url, methods){
 		const info = await getInfo(url);
 
 		// The methods are wrapped so that we can ensure that they are only called once.
@@ -198,11 +116,27 @@ class Track {// implements TrackData {
 		return new Track(
       url,
 			info.videoDetails.title,
+      info.videoDetails.lengthSeconds,
       info.player_response.playerConfig.audioConfig.loudnessDb,
 		  wrappedMethods,
 		);
 	}
 
+function TimeConverter(duration){
+  const sec = ("0" + duration % 60).slice(-2);
+  let min = Math.floor(duration / 60);
+  if (min < 60){
+    min = ("0" + min).slice(-2);
+    const rtn = `${min}:${sec}`;
+    return rtn;
+  }else{
+    const hr = Math.floor(min / 60);
+    min = min % 60;
+    min = ("0" + min).slice(-2);
+    const rtn = `${hr}:${min}:${sec}`;
+    return rtn;
+  }
+}
 
 module.exports = {
   Track: Track,

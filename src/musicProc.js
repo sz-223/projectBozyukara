@@ -4,10 +4,20 @@ const { Track, TrackFrom } = require('./music/track.js');
 const { entersState, AudioPlayerStatus, VoiceConnectionStatus, createAudioPlayer, createAudioResource, joinVoiceChannel,  StreamType, NoSubscriberBehavior } = require('@discordjs/voice');
 
 var subscription;
+const musicChannelid = process.env.MUSIC_TEXTCHANNEL_ID;
 
 async function musicPlay(message){
   // メッセージから動画URLだけを取り出す
-  const url = message.content.split(' ')[1];
+  const url_ = message.content.split(' ')[1];
+  let url;
+  if(url_.match('^h?ttps?://www.youtube.com/watch')){
+    if (url_.charAt(0) === 't') url = 'h' + url_.split('&')[0];
+    else url = url_.split('&')[0];
+  } else if(url_.match('^h?ttps?://youtu.be/')){
+    if (url_.charAt(0) === 't') url = 'h' + url_.split('?')[0];
+    else url = url_.split('?')[0];
+  }
+  console.log(url);
   if (!ytdl.validateURL(url)) return message.reply(`${url}は処理できません。`);
   // コマンドを実行したメンバーがいるボイスチャンネルを取得
   const channel = message.member.voice.channel;
@@ -16,13 +26,10 @@ async function musicPlay(message){
   // コマンドを実行したメンバーがボイスチャンネルに入ってなければ処理を止める
   if (!channel) return message.reply('先にボイスチャンネルに参加してください！');
   
-  //await interaction.defer();
-
 		// If a connection to the guild doesn't already exist and the user is in a voice channel, join that channel
 		// and create a subscription.
 
 		if (!subscription) {
-			//const channel = message.channel;
       const connection = joinVoiceChannel({
 					channelId: channel.id,
 					guildId: channel.guild.id,
@@ -30,7 +37,6 @@ async function musicPlay(message){
           selfDeaf: true,
           selfMute: false,
 				});
-      console.log(connection);
 			subscription = new MusicSubscription(
 				connection
 			);
@@ -38,6 +44,7 @@ async function musicPlay(message){
       console.log(subscription.voiceConnection._events.error);
     }
 		// Make sure the connection is ready before processing the user's request
+    subscription.registerMessage(message);
 		try {
 			await entersState(subscription.voiceConnection, VoiceConnectionStatus.Ready, 20 * 1000);
 		} catch (error) {
@@ -47,39 +54,21 @@ async function musicPlay(message){
 		}
 
 		try {
-			/*
-      // Attempt to create a Track from the user's video URL
-			const track = await TrackFrom(url, {
-				onStart() {
-					console.log('Now playing!');//.catch(console.warn);
-				},
-				onFinish() {
-					console.log('Now finished!');//.catch(console.warn);
-				},
-				onError(error) {
-					console.warn(error);
-					console.log(`Error: ${error.message}`);//.catch(console.warn);
-				},
-			});
-			// Enqueue the track and reply a success message to the user
-			subscription.enqueue(track);
-      */
-      // Attempt to create a Track from the user's video URL
+			// Attempt to create a Track from the user's video URL
 			TrackFrom(url, {
 				onStart() {
-					console.log('Now playing!');//.catch(console.warn);
+				  console.log('Now playing!');
 				},
 				onFinish() {
-					console.log('Now finished!');//.catch(console.warn);
+					console.log('Now finished!');
 				},
 				onError(error) {
 					console.warn(error);
-					console.log(`Error: ${error.message}`);//.catch(console.warn);
+					chatChannel.send(`Error: ${error.message}`);
 				},
 			})
 			// Enqueue the track and reply a success message to the user
-			.then(track => subscription.enqueue(track) && console.log(`Enqueued **${track.title}**`))
-			//.then(track => console.log(`Enqueued **${track.title}**`));
+			.then(track => {subscription.enqueue(track);/* chatChannel.send(`Enqueued **${track.title}**`)*/;})
 		} catch (error) {
 			console.warn(error);
 			await chatChannel.send('Failed to play track, please try again later!');
@@ -92,9 +81,9 @@ function musicSkip(message){
 			// listener defined in music/subscription.ts, transitions into the Idle state mean the next track from the queue
 			// will be loaded and played.
 			subscription.audioPlayer.stop();
-			console.log('Skipped song!');
+			message.channel.send('Skipped song!');
 		} else {
-			console.log('Not playing in this server!');
+			message.reply('Not playing in this server!');
 	}
 }
 
@@ -102,55 +91,64 @@ function musicQueue(message){
   // Print out the current queue, including up to the next 5 tracks to be played.
 		if (subscription) {
 			const current =
-				subscription.audioPlayer.state.status === AudioPlayerStatus.Idle
+				(subscription.audioPlayer.state.status === AudioPlayerStatus.Idle && subscription.audioPlayer.state.resource !== undefined)
 					? `Nothing is currently playing!`
-					: `Playing **${(subscription.audioPlayer.state.resource).metadata.title}**`;
+					: `Playing **${(subscription.audioPlayer.state.resource).metadata.title}** \`[${(subscription.audioPlayer.state.resource).metadata.duration}]\``;
 
 			const queue = subscription.queue
 				.slice(0, 5)
-				.map((track, index) => `${index + 1}) ${track.title}`)
+				.map((track, index) => `\`${index + 1}) [${track.duration}]\` ${track.title}`)
 				.join('\n');
-
-			console.log(`${current}\n\n${queue}`);
+      
+      message.channel.send(`${current}\n\n${queue}`);
+      /*message.channel.send({embeds: [{
+        fields: [{value: `${current}\n\n${queue}`}]
+      }]});*/
 		} else {
-			console.log('Not playing in this server!');
+			message.reply('Not playing in this server!');
 		}
 }
 
-function musicPause(message){
-  if (subscription) {
+async function musicPause(message){
+  if (subscription && subscription.audioPlayer.state.resource !== undefined) {
 			subscription.audioPlayer.pause();
-			console.log('Paused!');
-		} else {
-			console.log('Not playing in this server!');
+			message.reply(`⏸ **${(subscription.audioPlayer.state.resource).metadata.title}**`);
+        } else {
+			message.reply('Not playing in this server!');
 		}
 }
 
 function musicResume(message){
-  if (subscription) {
+  if (subscription && subscription.audioPlayer.state.resource !== undefined) {
 			subscription.audioPlayer.unpause();
-			console.log(`Unpaused!`);
+			message.reply(`▶️ **${(subscription.audioPlayer.state.resource).metadata.title}**`);
 		} else {
-			console.log('Not playing in this server!');
+			message.reply('Not playing in this server!');
 	}
 }
 
 function musicLeave(message){
   if (subscription) {
-			subscription.voiceConnection.destroy();
+      musicDestroy();
 			console.log(`Left channel!`);
 		} else {
-			console.log('Not playing in this server!');
+			message.reply('Not playing in this server!');
 	}
 }
 
+function musicDestroy(){
+  if(subscription){
+    subscription.voiceConnection.destroy();
+    subscription = undefined;
+  }
+}
+
 module.exports = {
-  //variable: variable,
   musicPlay: musicPlay,
   musicSkip: musicSkip,
   musicQueue: musicQueue,
   musicPause: musicPause,
   musicResume: musicResume,
-  musicLeave: musicLeave
-  // exportsに設定しない限り_f()は呼べない
+  musicLeave: musicLeave,
+  musicDestroy: musicDestroy
 }
