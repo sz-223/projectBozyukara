@@ -6,7 +6,6 @@ const cmdProc = require('./cmdProc.js');
 const { Client, Intents, MessageAttachment } = require('discord.js');
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES] });
-//const notifChannelID = client.channels.cache.filter((channel)=> channel.id === '863697257584656389').first();
 
 http.createServer(function(req, res){
   if (req.method == 'POST'){
@@ -38,6 +37,8 @@ http.createServer(function(req, res){
 client.on('ready', () =>{
   console.log('Bot準備完了～');
   client.user.setPresence({ activity: { name: 'げーむ' } });
+  //const musicChannelID = client.channels.cache.filter((channel)=> channel.id === process.env.MUSIC_TEXTCHANNEL_ID).first();
+  //musicChannelID.send('Bot再起動〜');
 });
 
 client.on('messageCreate', message =>{
@@ -82,7 +83,7 @@ client.on('voiceStateUpdate', async (oldState, newState) =>{
     }else if(newState.channel === null){
       if(gulid.channels.cache.filter(c => c.type === 'GUILD_VOICE' && memberSizeExceptBot(c) === true).size === 0 && oldState.channel.id !== gulid.afkChannelId){
         if(gulid.channels.cache.filter(c => c.type === 'GUILD_VOICE' && c.members.size !== 0).size === 0)notifChannelID.send("いまは誰も入室してないよー\n");
-        cmdProc.DestroyMusicBotConnection();
+        cmdProc.DestroyMusicBotConnection(client);
       }
       //notifChannelID.send("<@" + newState.id +"> が通話を終了しました！\n");
       //notifChannelID.send(oldState.channel.members.size + "人\n");

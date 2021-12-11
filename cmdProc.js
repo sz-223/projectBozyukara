@@ -30,8 +30,8 @@ async function cmdProcedure(message){
   }
 }
 
-function DestroyMusicBotConnection(){
-  musicProc.musicDestroy();
+function DestroyMusicBotConnection(client){
+  musicProc.musicDestroy(client);
 }
 
 function musicChannelCheck(message){

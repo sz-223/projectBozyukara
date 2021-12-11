@@ -4,7 +4,6 @@ const { Track, TrackFrom } = require('./music/track.js');
 const { entersState, AudioPlayerStatus, VoiceConnectionStatus, createAudioPlayer, createAudioResource, joinVoiceChannel,  StreamType, NoSubscriberBehavior } = require('@discordjs/voice');
 
 var subscription;
-const musicChannelid = process.env.MUSIC_TEXTCHANNEL_ID;
 
 async function musicPlay(message){
   // メッセージから動画URLだけを取り出す
@@ -129,17 +128,19 @@ function musicResume(message){
 
 function musicLeave(message){
   if (subscription) {
-      musicDestroy();
+      musicDestroy(message.client);
 			console.log(`Left channel!`);
 		} else {
 			message.reply('Not playing in this server!');
 	}
 }
 
-function musicDestroy(){
+function musicDestroy(client){
   if(subscription){
     subscription.voiceConnection.destroy();
     subscription = undefined;
+    const musicChannelid = client.channels.cache.filter((channel)=> channel.id === process.env.MUSIC_TEXTCHANNEL_ID).first();
+    musicChannelid.send('The queue has been cleared!');
   }
 }
 
