@@ -7,14 +7,22 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "fastify": "^3.24.0",
+    "fastify": "^3.24.1",
     "fastify-formbody": "^5.2.0",
     "fastify-static": "^4.5.0",
     "handlebars": "^4.7.7",
-    "point-of-view": "^4.15.3",
+    "point-of-view": "^4.16.0",
     "discord.js": "^13.3.1",
     "query-string": "^7.0.1",
-    "canvas": "^2.8.0"
+    "canvas": "^2.8.0",
+    "ytdl-core": "^4.9.1",
+    "@discordjs/opus": "^0.6.0",
+    "tweetnacl": "^1.0.3",
+    "@discordjs/voice": "^0.7.5",
+    "simple-youtube-api": "^5.2.1",
+    "youtube-dl-exec": "^2.0.0",
+    "ffmpeg-stream": "^0.7.0",
+    "fluent-ffmpeg": "^2.1.2"
   },
   "engines": {
     "node": "16.x"
