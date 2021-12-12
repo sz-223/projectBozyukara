@@ -52,7 +52,7 @@ async function musicPlay(message){
 			return;
 		}
 
-		try {
+		//try {
 			// Attempt to create a Track from the user's video URL
 			TrackFrom(url, {
 				onStart() {
@@ -68,10 +68,11 @@ async function musicPlay(message){
 			})
 			// Enqueue the track and reply a success message to the user
 			.then(track => {subscription.enqueue(track);/* chatChannel.send(`Enqueued **${track.title}**`)*/;})
-		} catch (error) {
+		//} catch (error) {
+      .catch(error => {
 			console.warn(error);
-			await chatChannel.send('Failed to play track, please try again later!');
-		}
+			/*await*/ chatChannel.send('Failed to play track, please try again later!');
+		});
 }
 
 function musicSkip(message){
@@ -90,7 +91,7 @@ function musicQueue(message){
   // Print out the current queue, including up to the next 5 tracks to be played.
 		if (subscription) {
 			const current =
-				(subscription.audioPlayer.state.status === AudioPlayerStatus.Idle && subscription.audioPlayer.state.resource !== undefined)
+				(subscription.audioPlayer.state.status === AudioPlayerStatus.Idle || subscription.audioPlayer.state.resource === undefined)
 					? `Nothing is currently playing!`
 					: `Playing **${(subscription.audioPlayer.state.resource).metadata.title}** \`[${(subscription.audioPlayer.state.resource).metadata.duration}]\``;
 
@@ -99,11 +100,28 @@ function musicQueue(message){
 				.map((track, index) => `\`${index + 1}) [${track.duration}]\` ${track.title}`)
 				.join('\n');
       
-      message.channel.send(`${current}\n\n${queue}`);
+      if (subscription.loop === true) message.channel.send(`${current} 🔁\n\n${queue}`);
+      else message.channel.send(`${current}\n\n${queue}`);
       /*message.channel.send({embeds: [{
         fields: [{value: `${current}\n\n${queue}`}]
       }]});*/
 		} else {
+			message.reply('Not playing in this server!');
+		}
+}
+
+async function musicLoop(message){
+  //console.log(message.content.split(' ').length);
+  if (subscription) {
+    if (message.content.split(' ').length < 2){
+      subscription.loop = true;
+    }
+    else if (message.content.split(' ')[1] === 'break'){
+			subscription.loop = false;
+    }else{
+      message.reply('Invalid command.');
+    }
+        } else {
 			message.reply('Not playing in this server!');
 		}
 }
@@ -148,6 +166,7 @@ module.exports = {
   musicPlay: musicPlay,
   musicSkip: musicSkip,
   musicQueue: musicQueue,
+  musicLoop: musicLoop,
   musicPause: musicPause,
   musicResume: musicResume,
   musicLeave: musicLeave,

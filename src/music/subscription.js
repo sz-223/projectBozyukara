@@ -31,6 +31,7 @@ class MusicSubscription {
      },
    });
 		this.queue = [];
+    this.loop = false;
 
 		this.voiceConnection.on('stateChange', async (_, newState) => {
       console.log("check1");
@@ -142,18 +143,24 @@ class MusicSubscription {
 
 		// Take the first item from the queue. This is guaranteed to exist due to the non-empty check above.
 		const nextTrack = this.queue.shift();
-		try {
+		//try {
 			// Attempt to convert the Track into an AudioResource (i.e. start streaming the video)
       this.message.channel.send(`Next ⏩ **${nextTrack.title}**`);
-			const resource = await nextTrack.createAudioResource();
+			const resource = await nextTrack.createAudioResource()
+      .catch(error => {
+        nextTrack.onError(error);
+			  this.queueLock = false;
+			  return this.processQueue();
+      });
 			this.audioPlayer.play(resource);
+      if(this.loop == true)this.queue.push(nextTrack);
 			this.queueLock = false;
-		} catch (error) {
+		/*} catch (error) {
 			// If an error occurred, try the next item of the queue instead
 			nextTrack.onError(error);
 			this.queueLock = false;
 			return this.processQueue();
-		}
+		}*/
 	}
   
   async registerMessage(message){

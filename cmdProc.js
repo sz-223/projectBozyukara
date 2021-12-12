@@ -14,6 +14,10 @@ async function cmdProcedure(message){
       if(!musicChannelCheck(message))return;
       if(!musicProc.musicQueue(message))return;
       break;
+    case '!loop':
+      if(!musicChannelCheck(message))return;
+      if(!musicProc.musicLoop(message))return;
+      break;
     case '!pause':
       if(!musicChannelCheck(message))return;
       if(!musicProc.musicPause(message))return;
