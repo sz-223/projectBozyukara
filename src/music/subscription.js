@@ -93,7 +93,8 @@ class MusicSubscription {
 		this.audioPlayer.on('stateChange', (oldState, newState) => {
 			if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
 				// If the Idle state is entered from a non-Idle state, it means that an audio resource has finished playing.
-				// The queue is then processed to start playing the next track, if one is available.
+				// The queue is then processed to start playing the next track, if one is available.      
+        if(this.loop == true)this.queue.push((oldState.resource).metadata);
 				(oldState.resource).metadata.onFinish();
         if(this.queue.length === 0){
           this.message.channel.send("The queue is empty.");
@@ -153,7 +154,6 @@ class MusicSubscription {
 			  return this.processQueue();
       });
 			this.audioPlayer.play(resource);
-      if(this.loop == true)this.queue.push(nextTrack);
 			this.queueLock = false;
 		/*} catch (error) {
 			// If an error occurred, try the next item of the queue instead
