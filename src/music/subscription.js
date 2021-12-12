@@ -31,6 +31,7 @@ class MusicSubscription {
      },
    });
 		this.queue = [];
+    this.loop = false;
 
 		this.voiceConnection.on('stateChange', async (_, newState) => {
       console.log("check1");
@@ -92,7 +93,8 @@ class MusicSubscription {
 		this.audioPlayer.on('stateChange', (oldState, newState) => {
 			if (newState.status === AudioPlayerStatus.Idle && oldState.status !== AudioPlayerStatus.Idle) {
 				// If the Idle state is entered from a non-Idle state, it means that an audio resource has finished playing.
-				// The queue is then processed to start playing the next track, if one is available.
+				// The queue is then processed to start playing the next track, if one is available.      
+        if(this.loop == true)this.queue.push((oldState.resource).metadata);
 				(oldState.resource).metadata.onFinish();
         if(this.queue.length === 0){
           this.message.channel.send("The queue is empty.");
@@ -142,18 +144,23 @@ class MusicSubscription {
 
 		// Take the first item from the queue. This is guaranteed to exist due to the non-empty check above.
 		const nextTrack = this.queue.shift();
-		try {
+		//try {
 			// Attempt to convert the Track into an AudioResource (i.e. start streaming the video)
       this.message.channel.send(`Next ⏩ **${nextTrack.title}**`);
-			const resource = await nextTrack.createAudioResource();
+			const resource = await nextTrack.createAudioResource()
+      .catch(error => {
+        nextTrack.onError(error);
+			  this.queueLock = false;
+			  return this.processQueue();
+      });
 			this.audioPlayer.play(resource);
 			this.queueLock = false;
-		} catch (error) {
+		/*} catch (error) {
 			// If an error occurred, try the next item of the queue instead
 			nextTrack.onError(error);
 			this.queueLock = false;
 			return this.processQueue();
-		}
+		}*/
 	}
   
   async registerMessage(message){

@@ -21,7 +21,8 @@ class Track {
 		this.url = url;
 		this.title = title;
     this.duration = TimeConverter(duration);
-    this.diffdB = - 30 - loudnessDB;
+    if(loudnessDB !== undefined)this.diffdB = - 30 - loudnessDB;
+    else this.diffdB = - 30;
 		this.onStart = onStart;
 		this.onFinish = onFinish;
 		this.onError = onError;
@@ -69,7 +70,7 @@ class Track {
                 converter
                   .createOutputStream({
                     f: "webm",
-                    timelimit: "20",
+                    //timelimit: "20",
                     acodec: "opus",
                     af: `volume=${this.diffdB}dB`,
                     //ab: "48K",
@@ -95,7 +96,8 @@ class Track {
 	 * @returns The created Track
 	 */
 	async function TrackFrom(url, methods){
-		const info = await getInfo(url);
+	  let info;
+    info = await getInfo(url);
 
 		// The methods are wrapped so that we can ensure that they are only called once.
 		const wrappedMethods = {
