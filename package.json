@@ -16,14 +16,14 @@
     "query-string": "^7.0.1",
     "canvas": "^2.8.0",
     "ytdl-core": "^4.9.1",
-    "@discordjs/opus": "^0.6.0",
+    "opusscript": "^0.0.8",
     "tweetnacl": "^1.0.3",
     "@discordjs/voice": "^0.7.5",
     "youtube-dl-exec": "^2.0.2",
     "ffmpeg-stream": "^0.7.0"
   },
   "engines": {
-    "node": "16.x"
+    "node": "20.x"
   },
   "repository": {
     "url": "https://glitch.com/edit/#!/frosted-dear-plant"
