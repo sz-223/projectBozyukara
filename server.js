@@ -6,6 +6,7 @@ const cmdProc = require('./cmdProc.js');
 const { Client, Intents, MessageAttachment } = require('discord.js');
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES] });
+const html = require('fs').readFileSync('./views/index.html');
 
 http.createServer(function(req, res){
   if (req.method == 'POST'){
@@ -29,8 +30,10 @@ http.createServer(function(req, res){
     });
   }
   else if (req.method == 'GET'){
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end('Discord Bot is active now\n');
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.end(html);
+    //res.end('Discord Bot is active now\n');
+    
   }
 }).listen(3000);
 
